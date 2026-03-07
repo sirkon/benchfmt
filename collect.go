@@ -2,8 +2,7 @@ package main
 
 import (
 	"bufio"
-	"os"
-	"regexp"
+	"io"
 	"strconv"
 	"strings"
 )
@@ -33,65 +32,70 @@ type CollectResult struct {
 	HasAllocs bool
 }
 
-func Collect() (*CollectResult, error) {
+func Collect(src io.Reader) (*CollectResult, error) {
 	var res CollectResult
-
-	// Регулярки
-	headerRe := regexp.MustCompile(`^(\w+):\s+(.+)$`)
-	// Новая регулярка, которая захватывает всё вместе
-	benchRe := regexp.MustCompile(`^(Benchmark\w+)-\d+\s+(\d+)\s+([\d.]+\s+ns/op)(?:\s+(\d+\s+B/op))?(?:\s+(\d+\s+allocs/op))?$`)
-
-	scanner := bufio.NewScanner(os.Stdin)
+	scanner := bufio.NewScanner(src)
 
 	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-
-		// Парсим заголовок
-		if matches := headerRe.FindStringSubmatch(line); matches != nil {
-			switch matches[1] {
-			case "goos":
-				res.Header.GOOS = matches[2]
-			case "goarch":
-				res.Header.GOARCH = matches[2]
-			case "pkg":
-				res.Header.Pkg = matches[2]
-			case "cpu":
-				res.Header.CPU = matches[2]
-			}
+		line := scanner.Text()
+		// Заменяем табы и множественные пробелы
+		fields := strings.Fields(strings.ReplaceAll(line, "\t", " "))
+		if len(fields) == 0 {
 			continue
 		}
 
-		// Парсим бенчмарки
-		if matches := benchRe.FindStringSubmatch(line); matches != nil {
-			r := BenchResult{
-				Name:       matches[1],
-				Iterations: parseInt(matches[2]),
-				NsPerOp:    matches[3], // Уже с "ns/op"
+		switch fields[0] {
+		case "goos:":
+			res.Header.GOOS = strings.Join(fields[1:], " ")
+		case "goarch:":
+			res.Header.GOARCH = strings.Join(fields[1:], " ")
+		case "pkg:":
+			res.Header.Pkg = strings.Join(fields[1:], " ")
+		case "cpu:":
+			res.Header.CPU = strings.Join(fields[1:], " ")
+		default:
+			if strings.HasPrefix(fields[0], "Benchmark") {
+				// Ожидаем минимум 4 поля: имя, итерации, значение, ns/op
+				if len(fields) < 4 {
+					continue
+				}
+				name := strings.Split(fields[0], "-")[0]
+				iter, _ := strconv.Atoi(fields[1])
+				r := BenchResult{
+					Name:       name,
+					Iterations: iter,
+					NsPerOp:    fields[2] + " " + fields[3],
+				}
+				idx := 4
+				// Парсим память (B/op)
+				if idx+1 < len(fields) && fields[idx+1] == "B/op" {
+					r.BytesPerOp = fields[idx] + " " + fields[idx+1]
+					r.HasMem = true
+					idx += 2
+				}
+				// Парсим аллокации (allocs/op)
+				if idx+1 < len(fields) && fields[idx+1] == "allocs/op" {
+					r.AllocsPerOp = fields[idx] + " " + fields[idx+1]
+					r.HasAllocs = true
+					idx += 2
+				}
+				res.Results = append(res.Results, r)
 			}
-
-			// Bytes alloc
-			if len(matches) > 4 && matches[4] != "" {
-				r.BytesPerOp = matches[4] // Уже с "B/op"
-				r.HasMem = true
-				res.HasMem = true
-			}
-
-			// Allocs
-			if len(matches) > 5 && matches[5] != "" {
-				r.AllocsPerOp = matches[5] // Уже с "allocs/op"
-				r.HasAllocs = true
-				res.HasAllocs = true
-			}
-
-			res.Results = append(res.Results, r)
+			// остальные строки игнорируем
 		}
 	}
 
-	if err := scanner.Err(); err != nil {
-		return &res, err
+	// Устанавливаем флаги наличия метрик
+	for _, r := range res.Results {
+		if r.HasMem {
+			res.HasMem = true
+		}
+		if r.HasAllocs {
+			res.HasAllocs = true
+		}
 	}
 
-	return &res, nil
+	return &res, scanner.Err()
 }
 
 func parseInt(s string) int {

@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	res, err := Collect()
+	res, err := Collect(os.Stdin)
 	if err != nil {
 		if res == nil {
 			message.Fatal(err)

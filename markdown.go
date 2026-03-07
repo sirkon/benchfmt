@@ -14,7 +14,7 @@ func generateMarkdown(data *CollectResult) {
 		header.GOOS, header.GOARCH, header.CPU, header.Pkg)
 
 	// Заголовок результатов
-	fmt.Println("## Results\n")
+	fmt.Println("## Results")
 
 	// Строим заголовки для таблицы результатов
 	headers := []string{"Benchmark", "Iterations", "ns/op"}

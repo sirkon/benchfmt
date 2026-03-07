@@ -1,0 +1,16 @@
+binary log with beer.Error write size: 168
+slog with text context write size: 254
+pure beer.Error write size: 49
+beer.Error with foreign error on the tip write size: 49
+beer.Error and foreign error intermixed write size: 63
+goos: linux
+goarch: amd64
+pkg: github.com/sirkon/blog
+cpu: 12th Gen Intel(R) Core(TM) i7-12700K
+BenchmarkBlog                      	 1623553	       738.4 ns/op	     631 B/op	       3 allocs/op
+BenchmarkTxtContext                	  686824	      1811 ns/op	     491 B/op	       9 allocs/op
+BenchmarkBlogTxtContext            	 1000000	      1268 ns/op	     482 B/op	       9 allocs/op
+BenchmarkAssembleAndFormattingCost 	 4553593	       258.8 ns/op
+BenchmarkAssembleCost              	 7910816	       151.4 ns/op
+BenchmarkWriteCost                 	 3296202	       367.4 ns/op
+PASS

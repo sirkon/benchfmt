@@ -1,0 +1,17 @@
+binary log with beer.Error write size: 168
+slog with text context write size: 252
+pure beer.Error write size: 49
+beer.Error with foreign error on the tip write size: 49
+beer.Error and foreign error intermixed write size: 63
+goos: darwin
+goarch: arm64
+pkg: github.com/sirkon/blog
+cpu: Apple M4 Pro
+BenchmarkBlog-12                         	  678921	      1789 ns/op	     631 B/op	       3 allocs/op
+BenchmarkTxtContext-12                   	  500245	      2499 ns/op	     491 B/op	       9 allocs/op
+BenchmarkBlogTxtContext-12               	  490200	      2156 ns/op	     483 B/op	       9 allocs/op
+BenchmarkAssembleAndFormattingCost-12    	 6076851	       196.3 ns/op
+BenchmarkAssembleCost-12                 	10292193	       124.4 ns/op
+BenchmarkWriteCost-12                    	  753667	      1723 ns/op
+PASS
+ok  	github.com/sirkon/blog	7.843s
