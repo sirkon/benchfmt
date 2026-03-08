@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"strconv"
 	"strings"
@@ -36,6 +37,8 @@ func Collect(src io.Reader) (*CollectResult, error) {
 	var res CollectResult
 	scanner := bufio.NewScanner(src)
 
+	var void string
+	var maxBenchNameLength int
 	for scanner.Scan() {
 		line := scanner.Text()
 		// Заменяем табы и множественные пробелы
@@ -55,7 +58,15 @@ func Collect(src io.Reader) (*CollectResult, error) {
 			res.Header.CPU = strings.Join(fields[1:], " ")
 		default:
 			if strings.HasPrefix(fields[0], "Benchmark") {
+				if len(fields[0]) > maxBenchNameLength {
+					maxBenchNameLength = len(fields[0])
+				}
+				if maxBenchNameLength > len(void) {
+					void = strings.Repeat(" ", maxBenchNameLength)
+				}
 				// Ожидаем минимум 4 поля: имя, итерации, значение, ns/op
+				fmt.Printf("\r\033[3m%s\r%s\033[0m", void, fields[0])
+
 				if len(fields) < 4 {
 					continue
 				}
@@ -84,6 +95,7 @@ func Collect(src io.Reader) (*CollectResult, error) {
 			// остальные строки игнорируем
 		}
 	}
+	fmt.Printf("\r%s\r", strings.Repeat(" ", maxBenchNameLength))
 
 	// Устанавливаем флаги наличия метрик
 	for _, r := range res.Results {
