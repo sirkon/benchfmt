@@ -7,6 +7,8 @@ import (
 func generateMarkdown(data *CollectResult) {
 	header := data.Header
 
+	fmt.Println("**System**")
+
 	// Таблица с информацией о системе
 	fmt.Println("| goos | goarch | cpu | pkg |")
 	fmt.Println("|-|-|-|-|")
@@ -14,7 +16,7 @@ func generateMarkdown(data *CollectResult) {
 		header.GOOS, header.GOARCH, header.CPU, header.Pkg)
 
 	// Заголовок результатов
-	fmt.Println("## Results")
+	fmt.Println("**Results**")
 
 	// Строим заголовки для таблицы результатов
 	headers := []string{"Benchmark", "Iterations", "ns/op"}

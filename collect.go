@@ -70,10 +70,13 @@ func Collect(src io.Reader) (*CollectResult, error) {
 				if len(fields) < 4 {
 					continue
 				}
-				name := strings.Split(fields[0], "-")[0]
+				name := strings.Split(fields[0], "-")
+				if len(name) > 1 {
+					name = name[:len(name)-1]
+				}
 				iter, _ := strconv.Atoi(fields[1])
 				r := BenchResult{
-					Name:       name,
+					Name:       strings.Join(name, "-"),
 					Iterations: iter,
 					NsPerOp:    fields[2] + " " + fields[3],
 				}
