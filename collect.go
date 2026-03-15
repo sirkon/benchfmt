@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -70,13 +71,10 @@ func Collect(src io.Reader) (*CollectResult, error) {
 				if len(fields) < 4 {
 					continue
 				}
-				name := strings.Split(fields[0], "-")
-				if len(name) > 1 {
-					name = name[:len(name)-1]
-				}
+				name := fields[0]
 				iter, _ := strconv.Atoi(fields[1])
 				r := BenchResult{
-					Name:       strings.Join(name, "-"),
+					Name:       name,
 					Iterations: iter,
 					NsPerOp:    fields[2] + " " + fields[3],
 				}
@@ -100,8 +98,20 @@ func Collect(src io.Reader) (*CollectResult, error) {
 	}
 	fmt.Printf("\r%s\r", strings.Repeat(" ", maxBenchNameLength))
 
-	// Устанавливаем флаги наличия метрик
+	// Устанавливаем флаги наличия метрик и отсекаем суффикс -\d+ если он есть на всех результатах.
+	hasCommonSuffix := true
+	var commonSuffix string
 	for _, r := range res.Results {
+		if hasCommonSuffix && matchSuffix.MatchString(r.Name) {
+			if !fixedSuffix {
+				fixedSuffix = true
+				pos := strings.LastIndex(r.Name, "-")
+				commonSuffix = r.Name[pos:]
+				matchSuffix = regexp.MustCompile(`^.*-` + r.Name[pos+1:] + `*$`)
+			}
+		} else {
+			hasCommonSuffix = false
+		}
 		if r.HasMem {
 			res.HasMem = true
 		}
@@ -110,10 +120,14 @@ func Collect(src io.Reader) (*CollectResult, error) {
 		}
 	}
 
+	if hasCommonSuffix {
+		for i := range res.Results {
+			res.Results[i].Name = res.Results[i].Name[:len(res.Results[i].Name)-len(commonSuffix)]
+		}
+	}
+
 	return &res, scanner.Err()
 }
 
-func parseInt(s string) int {
-	i, _ := strconv.Atoi(s)
-	return i
-}
+var matchSuffix = regexp.MustCompile(`^.*-\d*$`)
+var fixedSuffix bool
