@@ -1,0 +1,24 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/tarantool/go-vshard-router/v2
+cpu: Apple M4 Pro
+BenchmarkStdVsSFK/std-1-bytes-12         	424853077	         2.713 ns/op
+BenchmarkStdVsSFK/sfk-1-bytes-12         	489327312	         2.442 ns/op
+BenchmarkStdVsSFK/std-2-bytes-12         	436154348	         2.809 ns/op
+BenchmarkStdVsSFK/sfk-2-bytes-12         	433357447	         2.720 ns/op
+BenchmarkStdVsSFK/std-3-bytes-12         	449748772	         2.640 ns/op
+BenchmarkStdVsSFK/sfk-3-bytes-12         	402455875	         3.049 ns/op
+BenchmarkStdVsSFK/std-4-bytes-12         	390983804	         3.122 ns/op
+BenchmarkStdVsSFK/sfk-4-bytes-12         	334851597	         3.597 ns/op
+BenchmarkStdVsSFK/std-8-bytes-12         	401451021	         2.953 ns/op
+BenchmarkStdVsSFK/sfk-8-bytes-12         	233550294	         5.147 ns/op
+BenchmarkStdVsSFK/std-32-bytes-12        	324462549	         3.638 ns/op
+BenchmarkStdVsSFK/sfk-32-bytes-12        	43200820	        29.24 ns/op
+BenchmarkStdVsSFK/std-1024-bytes-12      	14522686	        84.49 ns/op
+BenchmarkStdVsSFK/sfk-1024-bytes-12      	  655285	      1778 ns/op
+BenchmarkStdVsSFK/std-16384-bytes-12     	  850605	      1474 ns/op
+BenchmarkStdVsSFK/sfk-16384-bytes-12     	   37933	     29821 ns/op
+BenchmarkStdVsSFK/std-10485760-bytes-12  	    1344	    877460 ns/op
+BenchmarkStdVsSFK/sfk-10485760-bytes-12  	      62	  18758812 ns/op
+PASS
+ok  	github.com/tarantool/go-vshard-router/v2	21.890s
