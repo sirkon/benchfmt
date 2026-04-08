@@ -166,7 +166,7 @@ func generateVSASCII(data *CollectResult, part0, part1 string, comparisons []Com
 	fmt.Println()
 
 	// Заголовки таблицы
-	headers := []string{"test", part0, part1, "ratio (2nd/1st)"}
+	headers := []string{"test", part0, part1, fmt.Sprintf("ratio (%s/%s)", part1, part0)}
 
 	tm = tableMaker{}
 	tm.registerWidths(headers)
