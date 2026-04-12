@@ -4,9 +4,11 @@ package main
 import (
 	"fmt"
 	"os"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 type ComparedResult struct {
@@ -43,7 +45,7 @@ func generateVS(data *CollectResult, vsSpec string, format string) {
 		// Проверяем, содержит ли имя part0
 		if strings.Contains(r.Name, part0) {
 			// Заменяем part0 на "VS" для наглядности
-			commonName := strings.Replace(r.Name, part0, "VS", 1)
+			commonName := strings.Replace(r.Name, part0, "", 1)
 			group1[commonName] = r
 			allCommonNames[commonName] = true
 			// Сохраняем порядок только для part[0]
@@ -56,7 +58,7 @@ func generateVS(data *CollectResult, vsSpec string, format string) {
 		// Проверяем, содержит ли имя part1
 		if strings.Contains(r.Name, part1) {
 			// Заменяем part1 на "VS" для наглядности
-			commonName := strings.Replace(r.Name, part1, "VS", 1)
+			commonName := strings.Replace(r.Name, part1, "", 1)
 			group2[commonName] = r
 			allCommonNames[commonName] = true
 			// Не обновляем порядок для part[1], только если его еще нет
@@ -85,8 +87,25 @@ func generateVS(data *CollectResult, vsSpec string, format string) {
 	var sortedNames []nameWithOrder
 	for fullName := range allCommonNames {
 		trimmedName := strings.TrimPrefix(fullName, commonPrefix)
-		// Если trimmedName начинается с "/", убираем его для красоты
-		trimmedName = strings.TrimPrefix(trimmedName, "/")
+		// Убираем из trimmedName все что не буква или число.
+		runes := []rune(trimmedName)
+		for len(runes) > 0 {
+			r := runes[0]
+			if unicode.IsLetter(r) || unicode.IsDigit(r) {
+				break
+			}
+			runes = runes[1:]
+		}
+		slices.Reverse(runes)
+		for len(runes) > 0 {
+			r := runes[0]
+			if unicode.IsLetter(r) || unicode.IsDigit(r) {
+				break
+			}
+			runes = runes[1:]
+		}
+		slices.Reverse(runes)
+		trimmedName = string(runes)
 		// Если trimmedName пустой, используем что-то осмысленное
 		if trimmedName == "" {
 			trimmedName = fullName
